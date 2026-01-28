@@ -31,17 +31,20 @@ public class WalkingScript : MonoBehaviour
         //_velocity.z *= transform.forward.z;
         //to keep running ahead
         _cc.SimpleMove(new Vector3(
-            _velocity.z * transform.forward.x + _velocity.x * transform.right.x,
+            _velocity.z * _camera.transform.forward.x + _velocity.x * _camera.transform.right.x,
             0,
-            _velocity.z * transform.forward.z + _velocity.x * transform.right.z));
+            _velocity.z * _camera.transform.forward.z + _velocity.x * _camera.transform.right.z));
 
         //to rotate to camera when moving
-        var cameraRotationDifference = Mathf.DeltaAngle(_camera.transform.eulerAngles.y, transform.eulerAngles.y);
-        if (_velocity.sqrMagnitude > 0f && Mathf.Abs(cameraRotationDifference) > 1)
+        // var cameraRotationDifference = Mathf.DeltaAngle(_camera.transform.eulerAngles.y, transform.eulerAngles.y);
+        if (_velocity.sqrMagnitude > 0f)
         {
-            var rotationDirection = cameraRotationDifference > 0 ? -1 : 1;
-            transform.Rotate(new Vector3(0, rotationDirection * turnSpeed * Time.deltaTime, 0));
-            _animator.SetFloat(RotationDifference, cameraRotationDifference);
+            //transform.rotation = new Quaternion(0, _camera.transform.rotation.y, 0, 0);
+            var test = new Quaternion(transform.rotation.x, _camera.transform.rotation.y, transform.rotation.z,transform.rotation.w);
+            transform.rotation = test;
+            // var rotationDirection = cameraRotationDifference > 0 ? -1 : 1;
+            // transform.Rotate(new Vector3(0, rotationDirection * turnSpeed * Time.deltaTime, 0));
+            // _animator.SetFloat(RotationDifference, cameraRotationDifference);
         }
     }
 
@@ -59,6 +62,11 @@ public class WalkingScript : MonoBehaviour
 
     public void OnLook(InputAction.CallbackContext ctx)
     {
+    }
+
+    public void OnJump(InputAction.CallbackContext ctx)
+    {
+        _animator.SetTrigger("Jump");
     }
 
     public void ChangeRotation(float value)
