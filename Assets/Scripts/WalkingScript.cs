@@ -10,6 +10,7 @@ public class WalkingScript : MonoBehaviour
     private static readonly int Velocity = Animator.StringToHash("Velocity");
     private static readonly int Strife = Animator.StringToHash("Strife");
     private static readonly int Grounded = Animator.StringToHash("Grounded");
+    private static readonly int Jumped = Animator.StringToHash("Jumped");
 
     public float speed = 20f;
     public float jumpHeight = 2f;
@@ -18,7 +19,6 @@ public class WalkingScript : MonoBehaviour
     private CharacterController _cc;
     private Vector3 _velocity;
     private Camera _camera;
-    private bool _hasJumped;
 
     private void Start()
     {
@@ -29,27 +29,15 @@ public class WalkingScript : MonoBehaviour
 
     private void Update()
     {
-        _cc.SimpleMove(new Vector3(
+        _velocity.y += Physics.gravity.y * Time.deltaTime;
+        var move = new Vector3(
             _velocity.z * _camera.transform.forward.x + _velocity.x * _camera.transform.right.x,
-            0,
-            _velocity.z * _camera.transform.forward.z + _velocity.x * _camera.transform.right.z));
+            _velocity.y,
+            _velocity.z * _camera.transform.forward.z + _velocity.x * _camera.transform.right.z) * Time.deltaTime;
+        _cc.Move(move);
 
-        if (_hasJumped)
-        {
-            _cc.Move(new Vector3(0, _velocity.y * Time.deltaTime, 0));
-        }
-
-        //to rotate to camera when moving
-        if (_velocity.sqrMagnitude > 0f)
-        {
-            transform.eulerAngles = new Vector3(0, _camera.transform.eulerAngles.y, 0);
-        }
-
-        if (_cc.isGrounded && _hasJumped)
-        {
-            _hasJumped = false;
-            _animator.SetBool(Grounded, true);
-        }
+        transform.forward = new Vector3(move.x, 0, move.z);
+        _animator.SetBool(Grounded, _cc.isGrounded);
     }
 
     public void OnMove(InputAction.CallbackContext ctx)
@@ -58,15 +46,13 @@ public class WalkingScript : MonoBehaviour
         _velocity = new Vector3(value.x, 0, value.y) * speed;
 
         //animations
-        _animator.SetFloat(Velocity, value.y);
-        _animator.SetFloat(Strife, value.x);
+        _animator.SetFloat(Velocity, Mathf.Clamp(Mathf.Abs(value.y + value.x), 0, 1));
     }
 
     public void OnJump(InputAction.CallbackContext ctx)
     {
-        if (!_cc.isGrounded || _hasJumped) return;
-        _velocity.y = Mathf.Sqrt(Mathf.Abs(jumpHeight * 2f * Physics.gravity.y));
-        _hasJumped = true;
-        _animator.SetBool(Grounded, false);
+        if (!_cc.isGrounded) return;
+        _velocity.y = Mathf.Sqrt(2f * jumpHeight * -Physics.gravity.y);
+        _animator.SetTrigger(Jumped);
     }
 }

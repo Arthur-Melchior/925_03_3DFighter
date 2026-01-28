@@ -260,7 +260,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 12209441}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.14948729, y: 0.061436523, z: -0.009306743, w: 0.98680925}
+  m_LocalRotation: {x: 0.14948729, y: 0.061436515, z: -0.009306741, w: 0.98680925}
   m_LocalPosition: {x: 0, y: 2.25, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -283,12 +283,12 @@ MonoBehaviour:
     ScreenPosition: {x: 0, y: 0}
     DeadZone:
       Enabled: 0
-      Size: {x: 0.2, y: 0.2}
+      Size: {x: 0.4, y: 0.5}
     HardLimits:
       Enabled: 0
       Size: {x: 0.8, y: 0.8}
       Offset: {x: 0, y: 0}
-  CenterOnActivate: 1
+  CenterOnActivate: 0
   TargetOffset: {x: 0.5, y: 1, z: 0}
   Damping: {x: 0.5, y: 0.5}
   Lookahead:
@@ -328,7 +328,7 @@ MonoBehaviour:
       Radius: 2.5
       Height: 0.1
     SplineCurvature: 0.5
-  RecenteringTarget: 2
+  RecenteringTarget: 0
   HorizontalAxis:
     Value: 0
     Center: 0
@@ -914,6 +914,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 10
+  jumpHeight: 2
 --- !u!4 &992721831 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: d9cd8eb4a074cd84ab2686c58bcf21d9, type: 3}
@@ -938,12 +939,12 @@ CharacterController:
   m_Enabled: 1
   serializedVersion: 3
   m_Height: 1.9
-  m_Radius: 0.35
+  m_Radius: 0.3
   m_SlopeLimit: 45
   m_StepOffset: 0.3
-  m_SkinWidth: 0.035
+  m_SkinWidth: 0.01
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0.9, z: 0}
+  m_Center: {x: 0, y: 0.95, z: 0}
 --- !u!43 &1023054740
 Mesh:
   m_ObjectHideFlags: 0
@@ -8312,7 +8313,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1823688464}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.14948729, y: 0.061436526, z: -0.009306743, w: 0.98680925}
+  m_LocalRotation: {x: 0.14948729, y: 0.06143652, z: -0.009306742, w: 0.98680925}
   m_LocalPosition: {x: 0, y: 2.25, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
