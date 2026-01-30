@@ -15,41 +15,46 @@ public class WalkingScript : MonoBehaviour
     private static readonly int Grounded = Animator.StringToHash("Grounded");
     private static readonly int Jumped = Animator.StringToHash("Jumped");
     private static readonly int InCombatAnimation = Animator.StringToHash("InCombat");
+    private static readonly int Dodge = Animator.StringToHash("Dodge");
 
-    public float speed = 20f;
+    public float speed = 10f;
     public float jumpHeight = 2f;
     public float coyoteTime = 0.2f;
+    public float rotationSpeed = 0.5f;
+    public float aggroAreaRadius = 10f;
     public bool inCombat;
     public CinemachineCamera cinemachineCamera;
+    public float cameraZoomOutDistance = 3f;
 
     private Animator _animator;
     private CharacterController _cc;
     private Vector3 _velocity;
-    private Camera _camera;
     private bool _grounded = true;
     private bool _jumped;
     private bool _moveCanceled;
 
+    private Transform _lookAtTarget;
+    private Vector3 _originalLookAtTargetPosition;
+    private CinemachineOrbitalFollow _cinemachineOrbitalFollow;
+    private CinemachineRotationComposer _cinemachineRotationComposer;
+
     private Collider[] _hits;
-    private float _aggroAreaRadius;
 
     private void Start()
     {
         _animator = GetComponent<Animator>();
         _cc = GetComponent<CharacterController>();
-        _camera = Camera.main;
+        _lookAtTarget = cinemachineCamera.Target.LookAtTarget;
+        _originalLookAtTargetPosition = _lookAtTarget.position;
+        _cinemachineOrbitalFollow = cinemachineCamera.GetComponent<CinemachineOrbitalFollow>();
+        _cinemachineRotationComposer = cinemachineCamera.GetComponent<CinemachineRotationComposer>();
     }
 
     private void Update()
     {
+        //to avoid applying gravity when grounded so that the velocity doesn't build up
         if (!_cc.isGrounded)
             _velocity.y += Physics.gravity.y * Time.deltaTime;
-
-        var move = new Vector3(
-            _velocity.z * _camera.transform.forward.x + _velocity.x * _camera.transform.right.x,
-            _velocity.y,
-            _velocity.z * _camera.transform.forward.z + _velocity.x * _camera.transform.right.z) * Time.deltaTime;
-        _cc.Move(move);
 
         //for coyote time
         //checks if in the air and hasn't jumped
@@ -62,16 +67,88 @@ public class WalkingScript : MonoBehaviour
             StopAllCoroutines();
             _grounded = true;
             _jumped = false;
-            _velocity.y = 0;
         }
 
-        if (!_moveCanceled && !inCombat)
-            transform.forward = new Vector3(move.x, 0, move.z);
-        else if (inCombat)
-            cinemachineCamera.Target.LookAtTarget = FindClosestEnemy().transform;
+        //applying movement to the character controller
+        var move = new Vector3(
+                       _velocity.z * cinemachineCamera.transform.forward.x +
+                       _velocity.x * cinemachineCamera.transform.right.x,
+                       _velocity.y,
+                       _velocity.z * cinemachineCamera.transform.forward.z +
+                       _velocity.x * cinemachineCamera.transform.right.z) *
+                   Time.deltaTime;
+        _cc.Move(move);
 
+        //to rotate the character in the same direction that he's moving in
+        //_moveCanceled is to avoid the character rotating to 0,0,0 when the player releases the input
+        if (!_moveCanceled && !inCombat)
+        {
+            var rotation = Vector3.Lerp(transform.forward, move, rotationSpeed);
+            rotation.y = 0;
+            transform.forward = rotation;
+        }
+        else if (inCombat)
+        {
+            var closestEnemy = FindClosestEnemy();
+
+            if (closestEnemy)
+            {
+                //Focuses the camera on the middle point between the player and enemy
+                _lookAtTarget.transform.position = Vector3.Lerp(_lookAtTarget.transform.position,
+                    (closestEnemy.transform.position + transform.position) / 2, 0.1f);
+
+                //homemade lerp to zoom out
+                InputAxisLerp(_cinemachineOrbitalFollow.RadialAxis, cameraZoomOutDistance);
+
+                //centers the camera
+                _cinemachineRotationComposer.Composition.ScreenPosition = new Vector2(0, 0);
+
+                //makes the character look at the closest enemy
+                transform.LookAt(new Vector3(closestEnemy.transform.position.x, 0, closestEnemy.transform.position.z));
+            }
+            else
+            {
+                //homemade lerp to zoom in
+                InputAxisLerp(_cinemachineOrbitalFollow.RadialAxis, 1);
+
+                //offsets camera
+                _cinemachineRotationComposer.Composition.ScreenPosition = new Vector2(-0.05f, -0.01f);
+
+                //Focuses the camera on the player
+                _lookAtTarget.position = Vector3.Lerp(_lookAtTarget.transform.position,
+                    new Vector3(transform.position.x, _originalLookAtTargetPosition.y, transform.position.z), 0.1f);
+
+                transform.forward = new Vector3(cinemachineCamera.transform.forward.x, 0,
+                    cinemachineCamera.transform.forward.z);
+            }
+        }
 
         _animator.SetBool(Grounded, _grounded);
+    }
+
+    private void InputAxisLerp(InputAxis axis, float zoomDistance, float zoomSpeed = 0.1f)
+    {
+        if (Mathf.Approximately(axis.Value, zoomDistance))
+            return;
+
+        if (axis.Value < zoomDistance)
+        {
+            var rad = _cinemachineOrbitalFollow.RadialAxis;
+            _cinemachineOrbitalFollow.RadialAxis = new InputAxis
+            {
+                Value = rad.Value + zoomSpeed, Center = rad.Center + zoomSpeed,
+                Range = new Vector2(rad.Range.x + zoomSpeed, rad.Range.y + zoomSpeed)
+            };
+        }
+        else if (axis.Value > zoomDistance)
+        {
+            var rad = _cinemachineOrbitalFollow.RadialAxis;
+            _cinemachineOrbitalFollow.RadialAxis = new InputAxis
+            {
+                Value = rad.Value - zoomSpeed, Center = rad.Center - zoomSpeed,
+                Range = new Vector2(rad.Range.x - zoomSpeed, rad.Range.y - zoomSpeed)
+            };
+        }
     }
 
     public void OnMove(InputAction.CallbackContext ctx)
@@ -97,28 +174,37 @@ public class WalkingScript : MonoBehaviour
     public void OnJump(InputAction.CallbackContext ctx)
     {
         if (_jumped || !_grounded) return;
-        _velocity.y = Mathf.Sqrt(2f * jumpHeight * -Physics.gravity.y);
-        _jumped = true;
-        _grounded = false;
-        _animator.SetTrigger(Jumped);
+
+        if (inCombat)
+        {
+            if (!ctx.performed) return;
+
+            _animator.SetTrigger(Dodge);
+        }
+        else
+        {
+            _velocity.y = Mathf.Sqrt(2f * jumpHeight * -Physics.gravity.y);
+            _jumped = true;
+            _grounded = false;
+            _animator.SetTrigger(Jumped);
+        }
     }
 
     public void StartCombat(InputAction.CallbackContext ctx)
     {
         inCombat = !inCombat;
+        _animator.applyRootMotion = !_animator.applyRootMotion;
         _animator.SetBool(InCombatAnimation, inCombat);
     }
 
     private Collider FindClosestEnemy()
     {
-        Physics.OverlapSphereNonAlloc(transform.position, _aggroAreaRadius, _hits);
+        _hits = Physics.OverlapSphere(transform.position, aggroAreaRadius, 1 << 6);
         var minDist = 100f;
         Collider closestEnemy = null;
 
         foreach (var col in _hits)
         {
-            if (!col.CompareTag("Enemy")) continue;
-
             if (Vector3.Distance(transform.position, col.transform.position) < minDist)
             {
                 closestEnemy = col;
