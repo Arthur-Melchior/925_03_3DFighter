@@ -1,14 +1,12 @@
 using System;
 using System.Collections;
-using System.Linq;
 using Unity.Cinemachine;
-using UnityEditor.Timeline.Actions;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(CharacterController))]
-public class WalkingScript : MonoBehaviour
+public class PlayerScript : MonoBehaviour
 {
     private static readonly int Velocity = Animator.StringToHash("Velocity");
     private static readonly int Strife = Animator.StringToHash("Strife");
@@ -16,22 +14,29 @@ public class WalkingScript : MonoBehaviour
     private static readonly int Jumped = Animator.StringToHash("Jumped");
     private static readonly int InCombatAnimation = Animator.StringToHash("InCombat");
     private static readonly int Dodge = Animator.StringToHash("Dodge");
+    private static readonly int RotationDifference = Animator.StringToHash("RotationDifference");
 
-    public float speed = 10f;
+    [Header("Exploration")] public float speed = 10f;
     public float jumpHeight = 2f;
     public float coyoteTime = 0.2f;
-    public float rotationSpeed = 0.5f;
-    public float aggroAreaRadius = 10f;
+    public float rotationSpeed = 0.1f;
+
+    [Header("Combat")] public float aggroAreaRadius = 10f;
+    public float dodgeBoost = 1.2f;
     public bool inCombat;
-    public CinemachineCamera cinemachineCamera;
-    public float cameraZoomOutDistance = 3f;
+
+    [Header("Camera")] public CinemachineCamera cinemachineCamera;
+    public float combatCameraZoomOutDistance = 3f;
 
     private Animator _animator;
     private CharacterController _cc;
     private Vector3 _velocity;
+    private Vector3 _move;
     private bool _grounded = true;
     private bool _jumped;
     private bool _moveCanceled;
+    private bool _isDodging;
+    private bool _isAttacking;
 
     private Transform _lookAtTarget;
     private Vector3 _originalLookAtTargetPosition;
@@ -58,6 +63,7 @@ public class WalkingScript : MonoBehaviour
 
         //for coyote time
         //checks if in the air and hasn't jumped
+        //this also avoids the issue of starting the falling animation in stairs
         if (_grounded && !_cc.isGrounded && !_jumped)
         {
             StartCoroutine(StartCoyoteTime(coyoteTime));
@@ -70,20 +76,27 @@ public class WalkingScript : MonoBehaviour
         }
 
         //applying movement to the character controller
-        var move = new Vector3(
-                       _velocity.z * cinemachineCamera.transform.forward.x +
-                       _velocity.x * cinemachineCamera.transform.right.x,
-                       _velocity.y,
-                       _velocity.z * cinemachineCamera.transform.forward.z +
-                       _velocity.x * cinemachineCamera.transform.right.z) *
-                   Time.deltaTime;
-        _cc.Move(move);
+        if (!_isDodging)
+        {
+            _move = new Vector3(
+                        _velocity.z * cinemachineCamera.transform.forward.x +
+                        _velocity.x * cinemachineCamera.transform.right.x,
+                        _velocity.y,
+                        _velocity.z * cinemachineCamera.transform.forward.z +
+                        _velocity.x * cinemachineCamera.transform.right.z) *
+                    Time.deltaTime;
+        }
+
+        if (!_isAttacking)
+        {
+            _cc.Move(_move);
+        }
 
         //to rotate the character in the same direction that he's moving in
         //_moveCanceled is to avoid the character rotating to 0,0,0 when the player releases the input
         if (!_moveCanceled && !inCombat)
         {
-            var rotation = Vector3.Lerp(transform.forward, move, rotationSpeed);
+            var rotation = Vector3.Lerp(transform.forward, _move, rotationSpeed);
             rotation.y = 0;
             transform.forward = rotation;
         }
@@ -98,13 +111,14 @@ public class WalkingScript : MonoBehaviour
                     (closestEnemy.transform.position + transform.position) / 2, 0.1f);
 
                 //homemade lerp to zoom out
-                InputAxisLerp(_cinemachineOrbitalFollow.RadialAxis, cameraZoomOutDistance);
+                InputAxisLerp(_cinemachineOrbitalFollow.RadialAxis, combatCameraZoomOutDistance);
 
                 //centers the camera
                 _cinemachineRotationComposer.Composition.ScreenPosition = new Vector2(0, 0);
 
                 //makes the character look at the closest enemy
-                transform.LookAt(new Vector3(closestEnemy.transform.position.x, 0, closestEnemy.transform.position.z));
+                transform.LookAt(new Vector3(closestEnemy.transform.position.x, 0,
+                    closestEnemy.transform.position.z));
             }
             else
             {
@@ -124,6 +138,7 @@ public class WalkingScript : MonoBehaviour
         }
 
         _animator.SetBool(Grounded, _grounded);
+        _animator.SetBool(InCombatAnimation, inCombat);
     }
 
     private void InputAxisLerp(InputAxis axis, float zoomDistance, float zoomSpeed = 0.1f)
@@ -173,12 +188,12 @@ public class WalkingScript : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext ctx)
     {
-        if (_jumped || !_grounded) return;
+        if (_jumped || !_grounded || !ctx.performed || _isDodging) return;
 
         if (inCombat)
         {
-            if (!ctx.performed) return;
-
+            _isDodging = true;
+            _move *= dodgeBoost;
             _animator.SetTrigger(Dodge);
         }
         else
@@ -190,10 +205,31 @@ public class WalkingScript : MonoBehaviour
         }
     }
 
-    public void StartCombat(InputAction.CallbackContext ctx)
+    public void OnLAttack(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.performed) return;
+
+        _isAttacking = true;
+        _animator.SetTrigger("LightAttack");
+    }
+
+    public void OnHAttack(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.performed) return;
+
+        _isAttacking = true;
+        _animator.SetTrigger("HeavyAttack");
+    }
+
+    public void UnlockInputs()
+    {
+        _isDodging = false;
+        _isAttacking = false;
+    }
+
+    public void ToggleCombat(InputAction.CallbackContext ctx)
     {
         inCombat = !inCombat;
-        _animator.applyRootMotion = !_animator.applyRootMotion;
         _animator.SetBool(InCombatAnimation, inCombat);
     }
 
@@ -220,4 +256,6 @@ public class WalkingScript : MonoBehaviour
         _grounded = false;
         _jumped = true;
     }
+
+    public void Die() => _animator.enabled = false;
 }
