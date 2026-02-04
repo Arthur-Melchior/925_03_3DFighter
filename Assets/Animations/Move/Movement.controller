@@ -459,9 +459,9 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.25
-  m_TransitionOffset: 0
-  m_ExitTime: 0.77272725
+  m_TransitionDuration: 0.25000006
+  m_TransitionOffset: 0.15019202
+  m_ExitTime: 0.99523383
   m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
@@ -499,7 +499,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Ligh Attack
+  m_Name: Parry
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -514,7 +514,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: c6c88a6e1b2ca864a8f76ec416df1d7b, type: 2}
+  m_Motion: {fileID: 7400000, guid: 46a7fdfab031c0f418d9ba691d54f95d, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 

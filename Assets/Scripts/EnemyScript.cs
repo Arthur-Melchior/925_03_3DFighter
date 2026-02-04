@@ -1,9 +1,15 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class EnemyScript : MonoBehaviour
 {
+    public float agroRadius = 10f;
+    public float attackRange = 1f;
+    public float speed = 5f;
+    public float attackRecovery = 2f;
+    public CapsuleCollider swordTrigger;
+    public PlayerScript player;
     private Animator _animator;
+    private float _attackReload = 2f;
 
     private void Start()
     {
@@ -12,7 +18,34 @@ public class EnemyScript : MonoBehaviour
 
     public void Die()
     {
+        DisableSword();
         _animator.enabled = false;
     }
+
+    private void Update()
+    {
+        if (!_animator.enabled)
+        {
+            return;
+        }
+        _attackReload += Time.deltaTime;
         
+        var distance = player.transform.position - transform.position;
+        if (distance.magnitude < attackRange && _attackReload > attackRecovery)
+        {
+            _attackReload = 0f;
+            swordTrigger.enabled = true;
+            _animator.SetTrigger("Attack");
+        }
+        else if (distance.magnitude > attackRange)
+        {
+            transform.position += distance.normalized * (speed * Time.deltaTime);
+        }
+    }
+
+    public void DisableSword()
+    {
+        _animator.SetTrigger("Parried");
+        swordTrigger.enabled = false;
+    }
 }

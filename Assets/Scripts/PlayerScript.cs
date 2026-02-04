@@ -23,6 +23,8 @@ public class PlayerScript : MonoBehaviour
 
     [Header("Combat")] public float aggroAreaRadius = 10f;
     public float dodgeBoost = 1.2f;
+    public CapsuleCollider swordTrigger;
+    public SphereCollider shieldTrigger;
     public bool inCombat;
 
     [Header("Camera")] public CinemachineCamera cinemachineCamera;
@@ -58,6 +60,11 @@ public class PlayerScript : MonoBehaviour
 
     private void Update()
     {
+        if (_isDead)
+        {
+            return;
+        }
+
         //to avoid applying gravity when grounded so that the velocity doesn't build up
         if (!_cc.isGrounded)
             _velocity.y += Physics.gravity.y * Time.deltaTime;
@@ -105,9 +112,12 @@ public class PlayerScript : MonoBehaviour
 
             if (closestEnemy)
             {
-                //Focuses the camera on the middle point between the player and enemy
-                _lookAtTarget.transform.position = Vector3.Lerp(_lookAtTarget.transform.position,
-                    (closestEnemy.transform.position + transform.position) / 2, 0.1f);
+                if (Vector3.Distance(_lookAtTarget.transform.position, closestEnemy.transform.position) > 1)
+                {
+                    //Focuses the camera on the middle point between the player and enemy
+                    _lookAtTarget.transform.position = Vector3.Lerp(_lookAtTarget.transform.position,
+                        (closestEnemy.transform.position + transform.position) / 2, 0.1f);
+                }
 
                 //homemade lerp to zoom out
                 InputAxisLerp(_cinemachineOrbitalFollow.RadialAxis, combatCameraZoomOutDistance);
@@ -214,6 +224,7 @@ public class PlayerScript : MonoBehaviour
         }
 
         _isAttacking = true;
+        shieldTrigger.enabled = true;
         _animator.SetTrigger("LightAttack");
     }
 
@@ -227,6 +238,7 @@ public class PlayerScript : MonoBehaviour
         if (!ctx.performed) return;
 
         _isAttacking = true;
+        swordTrigger.enabled = true;
         _animator.SetTrigger("HeavyAttack");
     }
 
@@ -277,4 +289,7 @@ public class PlayerScript : MonoBehaviour
         _isDead = false;
         _animator.SetBool("Death", false);
     }
+
+    public void DisableSword() => swordTrigger.enabled = false;
+    public void DisableShield() => shieldTrigger.enabled = false;
 }
