@@ -44,6 +44,7 @@ public class PlayerScript : MonoBehaviour
     private CinemachineRotationComposer _cinemachineRotationComposer;
 
     private Collider[] _hits;
+    private bool _isDead;
 
     private void Start()
     {
@@ -87,10 +88,8 @@ public class PlayerScript : MonoBehaviour
                     Time.deltaTime;
         }
 
-        if (!_isAttacking)
-        {
-            _cc.Move(_move);
-        }
+        _cc.Move(_move);
+
 
         //to rotate the character in the same direction that he's moving in
         //_moveCanceled is to avoid the character rotating to 0,0,0 when the player releases the input
@@ -209,12 +208,22 @@ public class PlayerScript : MonoBehaviour
     {
         if (!ctx.performed) return;
 
+        if (!inCombat)
+        {
+            inCombat = true;
+        }
+
         _isAttacking = true;
         _animator.SetTrigger("LightAttack");
     }
 
     public void OnHAttack(InputAction.CallbackContext ctx)
     {
+        if (!inCombat)
+        {
+            inCombat = true;
+        }
+
         if (!ctx.performed) return;
 
         _isAttacking = true;
@@ -257,5 +266,15 @@ public class PlayerScript : MonoBehaviour
         _jumped = true;
     }
 
-    public void Die() => _animator.enabled = false;
+    public void Die()
+    {
+        _isDead = true;
+        _animator.SetBool("Death", true);
+    }
+
+    public void Resurrect()
+    {
+        _isDead = false;
+        _animator.SetBool("Death", false);
+    }
 }
