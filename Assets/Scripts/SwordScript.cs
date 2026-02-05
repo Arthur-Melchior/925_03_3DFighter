@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 
 public class SwordScript : MonoBehaviour
 {

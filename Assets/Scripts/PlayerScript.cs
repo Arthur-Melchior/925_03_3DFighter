@@ -39,6 +39,7 @@ public class PlayerScript : MonoBehaviour
     private bool _moveCanceled;
     private bool _isDodging;
     private bool _isAttacking;
+    private bool _focusEnemy;
 
     private Transform _lookAtTarget;
     private Vector3 _originalLookAtTargetPosition;
@@ -112,13 +113,13 @@ public class PlayerScript : MonoBehaviour
 
             if (closestEnemy)
             {
-                if (Vector3.Distance(_lookAtTarget.transform.position, closestEnemy.transform.position) > 1)
+                if (_focusEnemy)
                 {
                     //Focuses the camera on the middle point between the player and enemy
                     _lookAtTarget.transform.position = Vector3.Lerp(_lookAtTarget.transform.position,
                         (closestEnemy.transform.position + transform.position) / 2, 0.1f);
                 }
-
+                
                 //homemade lerp to zoom out
                 InputAxisLerp(_cinemachineOrbitalFollow.RadialAxis, combatCameraZoomOutDistance);
 
@@ -256,7 +257,7 @@ public class PlayerScript : MonoBehaviour
 
     private Collider FindClosestEnemy()
     {
-        _hits = Physics.OverlapSphere(transform.position, aggroAreaRadius, 1 << 6);
+        _hits = Physics.OverlapSphere(transform.position, aggroAreaRadius, 1 << 8);
         var minDist = 100f;
         Collider closestEnemy = null;
 
@@ -280,6 +281,7 @@ public class PlayerScript : MonoBehaviour
 
     public void Die()
     {
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Parry")) return;
         _isDead = true;
         _animator.SetBool("Death", true);
     }
@@ -292,4 +294,5 @@ public class PlayerScript : MonoBehaviour
 
     public void DisableSword() => swordTrigger.enabled = false;
     public void DisableShield() => shieldTrigger.enabled = false;
+    public void ToggleFocus(InputAction.CallbackContext ctx) => _focusEnemy = !_focusEnemy;
 }

@@ -28,24 +28,35 @@ public class EnemyScript : MonoBehaviour
         {
             return;
         }
+
         _attackReload += Time.deltaTime;
-        
+
         var distance = player.transform.position - transform.position;
         if (distance.magnitude < attackRange && _attackReload > attackRecovery)
         {
             _attackReload = 0f;
-            swordTrigger.enabled = true;
             _animator.SetTrigger("Attack");
         }
         else if (distance.magnitude > attackRange)
         {
             transform.position += distance.normalized * (speed * Time.deltaTime);
+            transform.LookAt(player.transform);
         }
+    }
+
+    public void GetParried()
+    {
+        _animator.SetTrigger("Parried");
+        swordTrigger.enabled = false;
     }
 
     public void DisableSword()
     {
-        _animator.SetTrigger("Parried");
         swordTrigger.enabled = false;
+    }
+
+    public void EnableSword()
+    {
+        swordTrigger.enabled = true;
     }
 }

@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7223387564466353346}
   - component: {fileID: 121625236096593982}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: LookAtTarget
   m_TagString: Enemy
   m_Icon: {fileID: 0}
