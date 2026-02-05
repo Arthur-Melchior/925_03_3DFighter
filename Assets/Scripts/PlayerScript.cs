@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Unity.Cinemachine;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,6 +16,9 @@ public class PlayerScript : MonoBehaviour
     private static readonly int InCombatAnimation = Animator.StringToHash("InCombat");
     private static readonly int Dodge = Animator.StringToHash("Dodge");
     private static readonly int RotationDifference = Animator.StringToHash("RotationDifference");
+    private static readonly int Parry = Animator.StringToHash("LightAttack");
+    private static readonly int HeavyAttack = Animator.StringToHash("HeavyAttack");
+    private static readonly int Death = Animator.StringToHash("Death");
 
     [Header("Exploration")] public float speed = 10f;
     public float jumpHeight = 2f;
@@ -24,7 +28,7 @@ public class PlayerScript : MonoBehaviour
     [Header("Combat")] public float aggroAreaRadius = 10f;
     public float dodgeBoost = 1.2f;
     public CapsuleCollider swordTrigger;
-    public SphereCollider shieldTrigger;
+    public SphereCollider shieldHitbox;
     public bool inCombat;
 
     [Header("Camera")] public CinemachineCamera cinemachineCamera;
@@ -66,10 +70,24 @@ public class PlayerScript : MonoBehaviour
             return;
         }
 
+        if (inCombat)
+        {
+            CombatLogic();
+        }
+        else
+        {
+            ExplorationLogic();
+        }
+    }
+
+    private void ExplorationLogic()
+    {
+        //PHYSICS
         //to avoid applying gravity when grounded so that the velocity doesn't build up
         if (!_cc.isGrounded)
             _velocity.y += Physics.gravity.y * Time.deltaTime;
 
+        //MOVEMENT
         //for coyote time
         //checks if in the air and hasn't jumped
         //this also avoids the issue of starting the falling animation in stairs
@@ -84,7 +102,32 @@ public class PlayerScript : MonoBehaviour
             _jumped = false;
         }
 
-        //applying movement to the character controller
+        _move = new Vector3(
+                    _velocity.z * cinemachineCamera.transform.forward.x +
+                    _velocity.x * cinemachineCamera.transform.right.x,
+                    _velocity.y,
+                    _velocity.z * cinemachineCamera.transform.forward.z +
+                    _velocity.x * cinemachineCamera.transform.right.z) *
+                Time.deltaTime;
+
+        _cc.Move(_move);
+
+        //to rotate the character in the same direction that he's moving in
+        //_moveCanceled is to avoid the character rotating to 0,0,0 when the player releases the input
+        if (!_moveCanceled)
+        {
+            var rotation = Vector3.Lerp(transform.forward, _move, rotationSpeed);
+            rotation.y = 0;
+            transform.forward = rotation;
+        }
+
+        _animator.SetBool(Grounded, _grounded);
+    }
+
+    private void CombatLogic()
+    {
+        //MOVEMENT
+        //to avoid the direction changing while dodging
         if (!_isDodging)
         {
             _move = new Vector3(
@@ -96,83 +139,73 @@ public class PlayerScript : MonoBehaviour
                     Time.deltaTime;
         }
 
-        _cc.Move(_move);
-
-
-        //to rotate the character in the same direction that he's moving in
-        //_moveCanceled is to avoid the character rotating to 0,0,0 when the player releases the input
-        if (!_moveCanceled && !inCombat)
+        if (!_isAttacking)
         {
-            var rotation = Vector3.Lerp(transform.forward, _move, rotationSpeed);
-            rotation.y = 0;
-            transform.forward = rotation;
+            _cc.Move(_move);
         }
-        else if (inCombat)
+
+        //CAMERA
+        if (_focusEnemy)
         {
             var closestEnemy = FindClosestEnemy();
-
             if (closestEnemy)
             {
-                if (_focusEnemy)
-                {
-                    //Focuses the camera on the middle point between the player and enemy
-                    _lookAtTarget.transform.position = Vector3.Lerp(_lookAtTarget.transform.position,
-                        (closestEnemy.transform.position + transform.position) / 2, 0.1f);
-                }
-                
-                //homemade lerp to zoom out
-                InputAxisLerp(_cinemachineOrbitalFollow.RadialAxis, combatCameraZoomOutDistance);
-
-                //centers the camera
-                _cinemachineRotationComposer.Composition.ScreenPosition = new Vector2(0, 0);
+                //Focuses the camera on the middle point between the player and enemy
+                _lookAtTarget.transform.position = Vector3.Lerp(_lookAtTarget.transform.position,
+                    (closestEnemy.transform.position + transform.position) / 2, 0.1f);
 
                 //makes the character look at the closest enemy
                 transform.LookAt(new Vector3(closestEnemy.transform.position.x, 0,
                     closestEnemy.transform.position.z));
             }
-            else
-            {
-                //homemade lerp to zoom in
-                InputAxisLerp(_cinemachineOrbitalFollow.RadialAxis, 1);
-
-                //offsets camera
-                _cinemachineRotationComposer.Composition.ScreenPosition = new Vector2(-0.05f, -0.01f);
-
-                //Focuses the camera on the player
-                _lookAtTarget.position = Vector3.Lerp(_lookAtTarget.transform.position,
-                    new Vector3(transform.position.x, _originalLookAtTargetPosition.y, transform.position.z), 0.1f);
-
-                transform.forward = new Vector3(cinemachineCamera.transform.forward.x, 0,
-                    cinemachineCamera.transform.forward.z);
-            }
         }
-
-        _animator.SetBool(Grounded, _grounded);
-        _animator.SetBool(InCombatAnimation, inCombat);
+        else
+        {
+            //makes the character look in the direction of the camera
+            transform.forward = new Vector3(cinemachineCamera.transform.forward.x, 0,
+                cinemachineCamera.transform.forward.z);
+        }
     }
 
-    private void InputAxisLerp(InputAxis axis, float zoomDistance, float zoomSpeed = 0.1f)
+    public void EnterCombat()
     {
-        if (Mathf.Approximately(axis.Value, zoomDistance))
-            return;
+        inCombat = true;
 
-        if (axis.Value < zoomDistance)
+        //homemade lerp to zoom out
+        StartCoroutine(InputAxisLerp(_cinemachineOrbitalFollow.RadialAxis, combatCameraZoomOutDistance));
+
+        //centers the camera
+        _cinemachineRotationComposer.Composition.ScreenPosition = new Vector2(0, 0);
+
+        _animator.SetBool(InCombatAnimation, true);
+    }
+
+    public void ExitCombat()
+    {
+        inCombat = false;
+
+        //homemade lerp to zoom in
+        StartCoroutine(InputAxisLerp(_cinemachineOrbitalFollow.RadialAxis, 1));
+
+        //offsets camera
+        _cinemachineRotationComposer.Composition.ScreenPosition = new Vector2(-0.05f, -0.01f);
+
+        //Focuses the camera on the player
+        _lookAtTarget.position = Vector3.Lerp(_lookAtTarget.transform.position,
+            new Vector3(transform.position.x, _originalLookAtTargetPosition.y, transform.position.z), 0.1f);
+
+        _animator.SetBool(InCombatAnimation, false);
+    }
+
+    public void ToggleCombat(InputAction.CallbackContext ctx)
+    {
+        if (inCombat)
         {
-            var rad = _cinemachineOrbitalFollow.RadialAxis;
-            _cinemachineOrbitalFollow.RadialAxis = new InputAxis
-            {
-                Value = rad.Value + zoomSpeed, Center = rad.Center + zoomSpeed,
-                Range = new Vector2(rad.Range.x + zoomSpeed, rad.Range.y + zoomSpeed)
-            };
+            ExitCombat();
         }
-        else if (axis.Value > zoomDistance)
+        else
         {
-            var rad = _cinemachineOrbitalFollow.RadialAxis;
-            _cinemachineOrbitalFollow.RadialAxis = new InputAxis
-            {
-                Value = rad.Value - zoomSpeed, Center = rad.Center - zoomSpeed,
-                Range = new Vector2(rad.Range.x - zoomSpeed, rad.Range.y - zoomSpeed)
-            };
+            EnterCombat();
         }
     }
 
@@ -198,16 +231,20 @@ public class PlayerScript : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext ctx)
     {
-        if (_jumped || !_grounded || !ctx.performed || _isDodging) return;
+        if (!ctx.performed) return;
 
         if (inCombat)
         {
+            if (_isDodging) return;
+
             _isDodging = true;
             _move *= dodgeBoost;
             _animator.SetTrigger(Dodge);
         }
         else
         {
+            if (_jumped || !_grounded) return;
+
             _velocity.y = Mathf.Sqrt(2f * jumpHeight * -Physics.gravity.y);
             _jumped = true;
             _grounded = false;
@@ -215,46 +252,48 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
-    public void OnLAttack(InputAction.CallbackContext ctx)
+    public void OnParry(InputAction.CallbackContext ctx)
     {
-        if (!ctx.performed) return;
-
-        if (!inCombat)
-        {
-            inCombat = true;
-        }
+        if (!ctx.performed || !inCombat) return;
 
         _isAttacking = true;
-        shieldTrigger.enabled = true;
-        _animator.SetTrigger("LightAttack");
+
+        //the shield hit boxes only exists when parrying and is set to false by an animation event
+        shieldHitbox.enabled = true;
+        _animator.SetTrigger(Parry);
     }
 
-    public void OnHAttack(InputAction.CallbackContext ctx)
+    public void OnAttack(InputAction.CallbackContext ctx)
     {
-        if (!inCombat)
-        {
-            inCombat = true;
-        }
-
-        if (!ctx.performed) return;
+        if (!ctx.performed || !inCombat) return;
 
         _isAttacking = true;
+        //the sword hit boxes only exists when parrying and is set to false by an animation event
         swordTrigger.enabled = true;
-        _animator.SetTrigger("HeavyAttack");
+        _animator.SetTrigger(HeavyAttack);
     }
 
-    public void UnlockInputs()
+    public void Die()
     {
-        _isDodging = false;
-        _isAttacking = false;
+        //invulnerable while parrying
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Parry")) return;
+        _isDead = true;
+        _animator.SetBool(Death, true);
+        _animator.Play("Die");
     }
 
-    public void ToggleCombat(InputAction.CallbackContext ctx)
+    public void Resurrect()
     {
-        inCombat = !inCombat;
-        _animator.SetBool(InCombatAnimation, inCombat);
+        _isDead = false;
+        _animator.SetBool(Death, false);
     }
 
+    public void AttackFinished() => _isAttacking = false;
+    public void DisableSword() => swordTrigger.enabled = false;
+    public void DisableShield() => shieldHitbox.enabled = false;
+    public void ToggleFocus(InputAction.CallbackContext ctx) => _focusEnemy = !_focusEnemy;
+
+    //HELPER FUNCTIONS
     private Collider FindClosestEnemy()
     {
         _hits = Physics.OverlapSphere(transform.position, aggroAreaRadius, 1 << 8);
@@ -272,27 +311,41 @@ public class PlayerScript : MonoBehaviour
         return closestEnemy;
     }
 
+    private IEnumerator InputAxisLerp(InputAxis axis, float zoomDistance, float zoomSpeed = 0.1f)
+    {
+        while (true)
+        {
+            if (Mathf.Approximately(axis.Value, zoomDistance))
+                yield break;
+
+            if (axis.Value < zoomDistance)
+            {
+                axis = new InputAxis
+                {
+                    Value = axis.Value + zoomSpeed, Center = axis.Center + zoomSpeed,
+                    Range = new Vector2(axis.Range.x + zoomSpeed, axis.Range.y + zoomSpeed)
+                };
+            }
+            else if (axis.Value > zoomDistance)
+            {
+                axis = new InputAxis
+                {
+                    Value = axis.Value - zoomSpeed, Center = axis.Center - zoomSpeed,
+                    Range = new Vector2(axis.Range.x - zoomSpeed, axis.Range.y - zoomSpeed)
+                };
+            }
+
+            _cinemachineOrbitalFollow.RadialAxis = axis;
+            
+            //Waits for next frame
+            yield return null;
+        }
+    }
+
     private IEnumerator StartCoyoteTime(float time)
     {
         yield return new WaitForSeconds(time);
         _grounded = false;
         _jumped = true;
     }
-
-    public void Die()
-    {
-        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Parry")) return;
-        _isDead = true;
-        _animator.SetBool("Death", true);
-    }
-
-    public void Resurrect()
-    {
-        _isDead = false;
-        _animator.SetBool("Death", false);
-    }
-
-    public void DisableSword() => swordTrigger.enabled = false;
-    public void DisableShield() => shieldTrigger.enabled = false;
-    public void ToggleFocus(InputAction.CallbackContext ctx) => _focusEnemy = !_focusEnemy;
 }

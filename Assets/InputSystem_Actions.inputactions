@@ -34,7 +34,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "HeavyAttack",
+                    "name": "Parry",
                     "type": "Button",
                     "id": "7059f691-f8ed-4a22-abf4-934938fda17e",
                     "expectedControlType": "",
@@ -97,27 +97,18 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "StartCombat",
-                    "type": "Button",
-                    "id": "e68e5b39-49b1-403d-8c51-dedf10852147",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Ressurect",
-                    "type": "Button",
-                    "id": "b3c45be9-69bd-476c-89a2-3a3b4dd8af81",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Focus",
+                    "name": "FocusEnemy",
                     "type": "Button",
                     "id": "cdec9c62-094f-4fbe-bfd5-57980789e026",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "EnterCombat",
+                    "type": "Button",
+                    "id": "d7cb092a-8b89-4b29-88b3-0b2dee10a973",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -517,7 +508,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "HeavyAttack",
+                    "action": "Parry",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -528,51 +519,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "HeavyAttack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "48fedfa6-d27d-408a-bac0-1e2fd69080b4",
-                    "path": "<Keyboard>/enter",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "StartCombat",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "ad50ab99-48a8-4e21-8293-68909b0c2e88",
-                    "path": "<Gamepad>/start",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "StartCombat",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "eb8d66d5-810d-4c19-9b5f-9ea30606211b",
-                    "path": "<Keyboard>/r",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Ressurect",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "a701b1cd-b26e-46fd-b4e7-8883562ecd31",
-                    "path": "<Gamepad>/leftStickPress",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Ressurect",
+                    "action": "Parry",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -583,7 +530,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Focus",
+                    "action": "FocusEnemy",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -594,7 +541,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Focus",
+                    "action": "FocusEnemy",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "819fa2c2-b4af-4c3d-8c06-2cc59ffbc831",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "EnterCombat",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
