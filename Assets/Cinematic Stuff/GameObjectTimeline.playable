@@ -37,7 +37,7 @@ MonoBehaviour:
     m_Start: 11.866666666666667
     m_ClipIn: 0
     m_Asset: {fileID: 8691095468719406056}
-    m_Duration: 23.08333333333334
+    m_Duration: 12.966666666666665
     m_TimeScale: 1
     m_ParentTrack: {fileID: -8819035177132987084}
     m_EaseInDuration: 0
@@ -112,7 +112,7 @@ MonoBehaviour:
     m_Start: 19.91247509755194
     m_ClipIn: 100.03333333333333
     m_Asset: {fileID: 588611296587748830}
-    m_Duration: 166.94666666666683
+    m_Duration: 4.920858235781392
     m_TimeScale: 1
     m_ParentTrack: {fileID: -8184296096484353804}
     m_EaseInDuration: 0
@@ -178,7 +178,8 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: blood and glory song
   m_Markers:
-    m_Objects: []
+    m_Objects:
+    - {fileID: -2266116075447053496}
   m_TrackProperties:
     volume: 1
     stereoPan: 0
@@ -443,6 +444,22 @@ MonoBehaviour:
   m_Retroactive: 0
   m_EmitOnce: 0
   m_Asset: {fileID: 11400000, guid: d5aedaf745f5cc14a8d1e8c6105f506b, type: 2}
+--- !u!114 &-2266116075447053496
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15c38f6fa1940124db1ab7f6fe7268d1, type: 3}
+  m_Name: Signal Emitter
+  m_EditorClassIdentifier: 
+  m_Time: 24.833333333333332
+  m_Retroactive: 0
+  m_EmitOnce: 0
+  m_Asset: {fileID: 11400000, guid: 7ccb4fd7927692244ac1990274e1987a, type: 2}
 --- !u!114 &-266265895167121322
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -843,7 +860,7 @@ MonoBehaviour:
     m_Start: 17.475000000000502
     m_ClipIn: 0
     m_Asset: {fileID: -7406029559034518615}
-    m_Duration: 17.4749999999995
+    m_Duration: 7.35833333333283
     m_TimeScale: 1
     m_ParentTrack: {fileID: 5638119519840729649}
     m_EaseInDuration: 0

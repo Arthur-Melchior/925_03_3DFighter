@@ -1,12 +1,12 @@
 using System;
 using System.Collections;
 using Unity.Cinemachine;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(AudioSource))]
 public class PlayerScript : MonoBehaviour
 {
     private static readonly int Velocity = Animator.StringToHash("Velocity");
@@ -36,6 +36,7 @@ public class PlayerScript : MonoBehaviour
 
     private Animator _animator;
     private CharacterController _cc;
+    private AudioSource _audioSource;
     private Vector3 _velocity;
     private Vector3 _move;
     private bool _grounded = true;
@@ -57,6 +58,7 @@ public class PlayerScript : MonoBehaviour
     {
         _animator = GetComponent<Animator>();
         _cc = GetComponent<CharacterController>();
+        _audioSource = GetComponent<AudioSource>();
         _lookAtTarget = cinemachineCamera.Target.LookAtTarget;
         _originalLookAtTargetPosition = _lookAtTarget.position;
         _cinemachineOrbitalFollow = cinemachineCamera.GetComponent<CinemachineOrbitalFollow>();
@@ -293,6 +295,13 @@ public class PlayerScript : MonoBehaviour
     public void DisableShield() => shieldHitbox.enabled = false;
     public void ToggleFocus(InputAction.CallbackContext ctx) => _focusEnemy = !_focusEnemy;
 
+    public void EnableControls()
+    {
+        this.GetComponent<PlayerInput>().enabled = true;
+        _audioSource.time = 90f;
+        _audioSource.Play();
+    }
+
     //HELPER FUNCTIONS
     private Collider FindClosestEnemy()
     {
@@ -336,7 +345,7 @@ public class PlayerScript : MonoBehaviour
             }
 
             _cinemachineOrbitalFollow.RadialAxis = axis;
-            
+
             //Waits for next frame
             yield return null;
         }

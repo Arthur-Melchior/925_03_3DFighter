@@ -10,7 +10,7 @@ public class EnemyScript : MonoBehaviour
     public PlayerScript player;
     private Animator _animator;
     private float _attackReload = 2f;
-
+   
     private void Start()
     {
         _animator = GetComponent<Animator>();
