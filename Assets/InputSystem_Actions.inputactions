@@ -113,6 +113,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Resurrect",
+                    "type": "Button",
+                    "id": "cf0eea91-e686-4155-a6a5-4f7ceab38c16",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -553,6 +562,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "EnterCombat",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b50a90a9-a3d7-4a1a-8a12-05bd0b362384",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Resurrect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ffeaeade-eb7d-48cb-a149-d921294c9237",
+                    "path": "<Gamepad>/leftStickPress",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Resurrect",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

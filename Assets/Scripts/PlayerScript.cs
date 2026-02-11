@@ -199,6 +199,12 @@ public class PlayerScript : MonoBehaviour
         _animator.SetBool(InCombatAnimation, false);
     }
 
+    public void UnlockInputs()
+    {
+        _isDodging = false;
+        _isAttacking = false;
+    }
+
     public void ToggleCombat(InputAction.CallbackContext ctx)
     {
         if (inCombat)
@@ -298,6 +304,7 @@ public class PlayerScript : MonoBehaviour
     public void EnableControls()
     {
         this.GetComponent<PlayerInput>().enabled = true;
+        EnterCombat();
         _audioSource.time = 90f;
         _audioSource.Play();
     }

@@ -1,13 +1,14 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 
 public class EnemyScript : MonoBehaviour
 {
-    public float agroRadius = 10f;
     public float attackRange = 1f;
     public float speed = 5f;
     public float attackRecovery = 2f;
     public CapsuleCollider swordTrigger;
     public PlayerScript player;
+    public UnityEvent onDie;
     private Animator _animator;
     private float _attackReload = 2f;
    
@@ -19,6 +20,7 @@ public class EnemyScript : MonoBehaviour
     public void Die()
     {
         DisableSword();
+        onDie?.Invoke();
         _animator.enabled = false;
     }
 
