@@ -31,6 +31,7 @@ public class EnemiesController : MonoBehaviour
     private void OnEnemyDie()
     {
         ++_killCount;
+        Debug.Log($"enemy killed {_killCount}");
         if (_killCount == _enemyCount)
         {
             var rand = new System.Random();

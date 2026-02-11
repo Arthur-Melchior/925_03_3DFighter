@@ -11,6 +11,7 @@ public class EnemyScript : MonoBehaviour
     public UnityEvent onDie;
     private Animator _animator;
     private float _attackReload = 2f;
+    private bool _isAttacking;
    
     private void Start()
     {
@@ -19,6 +20,7 @@ public class EnemyScript : MonoBehaviour
 
     public void Die()
     {
+        if (!_animator.enabled) return;
         DisableSword();
         onDie?.Invoke();
         _animator.enabled = false;
@@ -26,7 +28,7 @@ public class EnemyScript : MonoBehaviour
 
     private void Update()
     {
-        if (!_animator.enabled)
+        if (!_animator.enabled || _isAttacking)
         {
             return;
         }
@@ -55,10 +57,12 @@ public class EnemyScript : MonoBehaviour
     public void DisableSword()
     {
         swordTrigger.enabled = false;
+        _isAttacking = false;
     }
 
     public void EnableSword()
     {
         swordTrigger.enabled = true;
+        _isAttacking = true;
     }
 }
