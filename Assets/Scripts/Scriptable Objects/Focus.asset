@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 799e2c87addaa214988b0192ecb7f694, type: 3}
   m_Name: Focus
   m_EditorClassIdentifier: 
-  keyboardSprite: {fileID: 21300000, guid: 223bcd722ad697149bb5f1bafbf04968, type: 3}
-  controllerSprite: {fileID: 21300000, guid: 1a20fe1c3ade3674395eb8ed3319145d, type: 3}
+  keyboardSprite: {fileID: 21300000, guid: f2fc82039e894054aab72ddacfc3a570, type: 3}
+  controllerSprite: {fileID: 21300000, guid: a3ffa3634b190e1419c40ae149fa59de, type: 3}
   description: Focus

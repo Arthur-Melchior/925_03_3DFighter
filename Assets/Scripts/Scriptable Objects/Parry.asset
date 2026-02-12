@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 799e2c87addaa214988b0192ecb7f694, type: 3}
   m_Name: Parry
   m_EditorClassIdentifier: 
-  keyboardSprite: {fileID: 21300000, guid: ab9e78b2e27d4de499d6e26d71bde570, type: 3}
-  controllerSprite: {fileID: 21300000, guid: 09750c07608c1304691d60525a4be764, type: 3}
+  keyboardSprite: {fileID: 21300000, guid: cdc59bb2b1f046f44859e12dd17ea70d, type: 3}
+  controllerSprite: {fileID: 21300000, guid: b7a1260661d8c1e419bfd075aa4b4f2c, type: 3}
   description: Parry

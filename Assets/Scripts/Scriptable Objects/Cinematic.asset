@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 799e2c87addaa214988b0192ecb7f694, type: 3}
   m_Name: Cinematic
   m_EditorClassIdentifier: 
-  keyboardSprite: {fileID: 21300000, guid: 6bd2df28ca64ce9459811b116bae5d3e, type: 3}
-  controllerSprite: {fileID: 21300000, guid: 09750c07608c1304691d60525a4be764, type: 3}
+  keyboardSprite: {fileID: 21300000, guid: 7351fbd8352e49e4dafcc2e57beb4e99, type: 3}
+  controllerSprite: {fileID: 21300000, guid: b7a1260661d8c1e419bfd075aa4b4f2c, type: 3}
   description: SKIP

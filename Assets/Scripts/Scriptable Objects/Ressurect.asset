@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 799e2c87addaa214988b0192ecb7f694, type: 3}
   m_Name: Ressurect
   m_EditorClassIdentifier: 
-  keyboardSprite: {fileID: 21300000, guid: f0146fcacd634274eb9df7128d68af7a, type: 3}
-  controllerSprite: {fileID: 21300000, guid: 643fc0bfc20e1764085322c9c1557ab5, type: 3}
+  keyboardSprite: {fileID: 21300000, guid: b8c7a8daf59fe5b4ab3970cb61c53bb0, type: 3}
+  controllerSprite: {fileID: 21300000, guid: b8c7a8daf59fe5b4ab3970cb61c53bb0, type: 3}
   description: Resurrect

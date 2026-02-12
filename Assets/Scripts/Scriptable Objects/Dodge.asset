@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 799e2c87addaa214988b0192ecb7f694, type: 3}
   m_Name: Dodge
   m_EditorClassIdentifier: 
-  keyboardSprite: {fileID: 21300000, guid: 6bd2df28ca64ce9459811b116bae5d3e, type: 3}
-  controllerSprite: {fileID: 21300000, guid: 54d228f334c07fc4a97b6d69eeb9d835, type: 3}
+  keyboardSprite: {fileID: 21300000, guid: 7351fbd8352e49e4dafcc2e57beb4e99, type: 3}
+  controllerSprite: {fileID: 21300000, guid: 12b289b5164bd35459802cba9d8cc867, type: 3}
   description: Dodge

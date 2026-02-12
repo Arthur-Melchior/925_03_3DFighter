@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 799e2c87addaa214988b0192ecb7f694, type: 3}
   m_Name: Attack
   m_EditorClassIdentifier: 
-  keyboardSprite: {fileID: 21300000, guid: 73d8196f78fdee040bd2627a58e801b6, type: 3}
-  controllerSprite: {fileID: 21300000, guid: 8cddf139be1732440a979932b2c63a57, type: 3}
+  keyboardSprite: {fileID: 21300000, guid: b46d35534b677ca40a2166eecbcf1304, type: 3}
+  controllerSprite: {fileID: 21300000, guid: d0845464c1cace94686084b89244d231, type: 3}
   description: Attack
