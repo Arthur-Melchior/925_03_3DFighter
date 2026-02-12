@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class jailaflemme : MonoBehaviour
+public class MainUiScript : MonoBehaviour
 {
     public TMP_Text winText;
     public Button winButton;

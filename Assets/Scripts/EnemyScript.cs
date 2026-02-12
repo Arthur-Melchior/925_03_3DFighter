@@ -49,10 +49,11 @@ public class EnemyScript : MonoBehaviour
         {
             _attackReload = 0f;
             _animator.SetTrigger("Attack");
+            _navMeshAgent.isStopped = true;
         }
         else if (distance.magnitude > attackRange)
         {
-            //transform.position += distance.normalized * (speed * Time.deltaTime);
+            _navMeshAgent.isStopped = false;
             _navMeshAgent.SetDestination(player.transform.position);
             transform.LookAt(player.transform);
         }
