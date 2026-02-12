@@ -29,6 +29,8 @@ public class PlayerScript : MonoBehaviour
     public float dodgeBoost = 1.2f;
     public CapsuleCollider swordTrigger;
     public SphereCollider shieldHitbox;
+    public float resurrectionHitRadius = 3;
+    public ParticleSystem resurrectionVFX;
     public bool inCombat;
 
     [Header("Camera")] public CinemachineCamera cinemachineCamera;
@@ -39,6 +41,7 @@ public class PlayerScript : MonoBehaviour
     private AudioSource _audioSource;
     private Vector3 _velocity;
     private Vector3 _move;
+    
     private bool _grounded = true;
     private bool _jumped;
     private bool _moveCanceled;
@@ -128,6 +131,9 @@ public class PlayerScript : MonoBehaviour
 
     private void CombatLogic()
     {
+        if (!_cc.isGrounded)
+            _velocity.y += Physics.gravity.y * Time.deltaTime;
+        
         //MOVEMENT
         //to avoid the direction changing while dodging
         if (!_isDodging)
@@ -292,8 +298,22 @@ public class PlayerScript : MonoBehaviour
 
     public void Resurrect()
     {
+        if (!_isDead) return;
         _isDead = false;
         _animator.SetBool(Death, false);
+        
+        var ray = new Ray(transform.position,transform.forward);
+        var enemies = Physics.SphereCastAll(ray, resurrectionHitRadius);
+        foreach (var enemy in enemies)
+        {
+            var script = enemy.collider.gameObject.GetComponentInParent<EnemyScript>();
+            if (script)
+            {
+                script.Die();
+            }
+        }
+        
+        resurrectionVFX.Play();
     }
 
     public void AttackFinished() => _isAttacking = false;

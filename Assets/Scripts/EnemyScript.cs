@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.Events;
 
+[RequireComponent(typeof(NavMeshAgent))]
 public class EnemyScript : MonoBehaviour
 {
     public float attackRange = 1f;
@@ -9,13 +11,17 @@ public class EnemyScript : MonoBehaviour
     public CapsuleCollider swordTrigger;
     public PlayerScript player;
     public UnityEvent onDie;
+    public ParticleSystem deathVFX;
     private Animator _animator;
     private float _attackReload = 2f;
     private bool _isAttacking;
-   
+    private NavMeshAgent _navMeshAgent;
+
+
     private void Start()
     {
         _animator = GetComponent<Animator>();
+        _navMeshAgent = GetComponent<NavMeshAgent>();
     }
 
     public void Die()
@@ -24,6 +30,9 @@ public class EnemyScript : MonoBehaviour
         DisableSword();
         onDie?.Invoke();
         _animator.enabled = false;
+        deathVFX.Play();
+        _navMeshAgent.enabled = false;
+        enabled = false;
     }
 
     private void Update()
@@ -43,7 +52,8 @@ public class EnemyScript : MonoBehaviour
         }
         else if (distance.magnitude > attackRange)
         {
-            transform.position += distance.normalized * (speed * Time.deltaTime);
+            //transform.position += distance.normalized * (speed * Time.deltaTime);
+            _navMeshAgent.SetDestination(player.transform.position);
             transform.LookAt(player.transform);
         }
     }
@@ -51,7 +61,7 @@ public class EnemyScript : MonoBehaviour
     public void GetParried()
     {
         _animator.SetTrigger("Parried");
-        swordTrigger.enabled = false;
+        DisableSword();
     }
 
     public void DisableSword()
@@ -62,7 +72,7 @@ public class EnemyScript : MonoBehaviour
 
     public void EnableSword()
     {
-        swordTrigger.enabled = true;
         _isAttacking = true;
+        swordTrigger.enabled = true;
     }
 }

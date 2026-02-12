@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 
 public class EnemiesController : MonoBehaviour
@@ -9,6 +10,7 @@ public class EnemiesController : MonoBehaviour
     public PlayerScript player;
     private float _enemyCount;
     private float _killCount;
+    public UnityEvent gameWon;
 
     public void SpawnEnemy()
     {
@@ -24,7 +26,7 @@ public class EnemiesController : MonoBehaviour
     {
         var ani = enemy.GetComponent<Animator>();
         yield return new WaitForSeconds(waitTime);
-        enemy.transform.position = new Vector3(enemy.transform.position.x, 0, enemy.transform.position.z);
+        //enemy.transform.position = new Vector3(enemy.transform.position.x, 0, enemy.transform.position.z);
         ani.enabled = true;
     }
 
@@ -32,7 +34,12 @@ public class EnemiesController : MonoBehaviour
     {
         ++_killCount;
         Debug.Log($"enemy killed {_killCount}");
-        if (_killCount == _enemyCount)
+        if (_killCount > 99)
+        {
+            gameWon?.Invoke();
+            enabled = false;
+        }
+        else if (_killCount == _enemyCount)
         {
             var rand = new System.Random();
             for (int i = 0; i < rand.Next(3, 11); i++)
