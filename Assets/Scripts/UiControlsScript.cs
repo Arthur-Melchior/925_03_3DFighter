@@ -4,12 +4,12 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UiController : MonoBehaviour
+public class UiControlsScript : MonoBehaviour
 {
-        public UIControls data;
-        public TMP_Text description;
-        public Image leftImage;
-        public Image rightImage;
+        [SerializeField] private UIControls data;
+        [SerializeField] private TMP_Text description;
+        [SerializeField] private Image leftImage;
+        [SerializeField] private Image rightImage;
 
         private void OnEnable()
         {

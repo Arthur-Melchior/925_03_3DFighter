@@ -11,16 +11,16 @@ using UnityEngine.Timeline;
 [RequireComponent(typeof(PlayerInput))]
 public class CinematicScript : MonoBehaviour
 {
-    public TMP_Text textBox;
-    public CinemachineCamera playerCamera;
-    public PlayerScript player;
-    public EnemiesController enemiesController;
-    public GameObject cinematicControls;
-    public GameObject gameplayControls;
+    [SerializeField] private TMP_Text textBox;
+    [SerializeField] private CinemachineCamera playerCamera;
+    [SerializeField] private PlayerScript player;
+    [SerializeField] private EnemiesController enemiesController;
+    [SerializeField] private GameObject cinematicControls;
+    [SerializeField] private GameObject gameplayControls;
+    
     private PlayableDirector _director;
     private PlayerInput _input;
-
-
+    
     private void Start()
     {
         _director = GetComponent<PlayableDirector>();

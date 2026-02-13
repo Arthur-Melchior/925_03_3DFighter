@@ -5,13 +5,15 @@ using UnityEngine.Events;
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyScript : MonoBehaviour
 {
-    public float attackRange = 1f;
-    public float speed = 5f;
-    public float attackRecovery = 2f;
-    public CapsuleCollider swordTrigger;
-    public PlayerScript player;
     public UnityEvent onDie;
-    public ParticleSystem deathVFX;
+    public PlayerScript player;
+    
+    [SerializeField] private float attackRange = 1f;
+    [SerializeField] private float speed = 5f;
+    [SerializeField] private float attackRecovery = 2f;
+    [SerializeField] private CapsuleCollider swordTrigger;
+    [SerializeField] private ParticleSystem deathVFX;
+    
     private Animator _animator;
     private float _attackReload = 2f;
     private bool _isAttacking;

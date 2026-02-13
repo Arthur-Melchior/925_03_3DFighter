@@ -5,8 +5,8 @@ using UnityEngine.UI;
 
 public class MainUiScript : MonoBehaviour
 {
-    public TMP_Text winText;
-    public Button winButton;
+    [SerializeField] private TMP_Text winText;
+    [SerializeField] private Button winButton;
 
     public void GameWon()
     {

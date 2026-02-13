@@ -20,34 +20,36 @@ public class PlayerScript : MonoBehaviour
     private static readonly int HeavyAttack = Animator.StringToHash("HeavyAttack");
     private static readonly int Death = Animator.StringToHash("Death");
 
-    [Header("Exploration")] public float speed = 10f;
-    public float jumpHeight = 2f;
-    public float coyoteTime = 0.2f;
-    public float rotationSpeed = 0.1f;
+    [Header("Exploration")] [SerializeField]
+    private float speed = 10f;
 
-    [Header("Combat")] public float aggroAreaRadius = 10f;
-    public float dodgeBoost = 1.2f;
-    public CapsuleCollider swordTrigger;
-    public SphereCollider shieldHitbox;
-    public float resurrectionHitRadius = 3;
-    public ParticleSystem resurrectionVFX;
-    public bool inCombat;
+    [SerializeField] private float jumpHeight = 2f;
+    [SerializeField] private float coyoteTime = 0.2f;
+    [SerializeField] private float rotationSpeed = 0.1f;
 
-    [Header("Camera")] public CinemachineCamera cinemachineCamera;
-    public float combatCameraZoomOutDistance = 3f;
+    [Header("Combat")] [SerializeField] private float aggroAreaRadius = 10f;
+    [SerializeField] private float dodgeBoost = 1.2f;
+    [SerializeField] private CapsuleCollider swordTrigger;
+    [SerializeField] private SphereCollider shieldHitbox;
+    [SerializeField] private float resurrectionHitRadius = 3;
+    [SerializeField] private ParticleSystem resurrectionVFX;
+
+    [Header("Camera")] [SerializeField] private CinemachineCamera cinemachineCamera;
+    [SerializeField] private float combatCameraZoomOutDistance = 3f;
 
     private Animator _animator;
     private CharacterController _cc;
     private AudioSource _audioSource;
     private Vector3 _velocity;
     private Vector3 _move;
-    
+
     private bool _grounded = true;
     private bool _jumped;
     private bool _moveCanceled;
     private bool _isDodging;
     private bool _isAttacking;
     private bool _focusEnemy;
+    private bool _inCombat;
 
     private Transform _lookAtTarget;
     private Vector3 _originalLookAtTargetPosition;
@@ -57,6 +59,7 @@ public class PlayerScript : MonoBehaviour
     private Collider[] _hits;
     private bool _isDead;
 
+    //MONO BEHAVIOUR FUNCTIONS
     private void Start()
     {
         _animator = GetComponent<Animator>();
@@ -75,7 +78,11 @@ public class PlayerScript : MonoBehaviour
             return;
         }
 
-        if (inCombat)
+        //to avoid applying gravity when grounded so that the velocity doesn't build up
+        if (!_cc.isGrounded)
+            _velocity.y += Physics.gravity.y * Time.deltaTime;
+
+        if (_inCombat)
         {
             CombatLogic();
         }
@@ -85,13 +92,10 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
+
+    //LOGIC FUNCTIONS
     private void ExplorationLogic()
     {
-        //PHYSICS
-        //to avoid applying gravity when grounded so that the velocity doesn't build up
-        if (!_cc.isGrounded)
-            _velocity.y += Physics.gravity.y * Time.deltaTime;
-
         //MOVEMENT
         //for coyote time
         //checks if in the air and hasn't jumped
@@ -131,9 +135,6 @@ public class PlayerScript : MonoBehaviour
 
     private void CombatLogic()
     {
-        if (!_cc.isGrounded)
-            _velocity.y += Physics.gravity.y * Time.deltaTime;
-        
         //MOVEMENT
         //to avoid the direction changing while dodging
         if (!_isDodging)
@@ -147,6 +148,7 @@ public class PlayerScript : MonoBehaviour
                     Time.deltaTime;
         }
 
+        //to stop the player from moving while attacking
         if (!_isAttacking)
         {
             _cc.Move(_move);
@@ -175,9 +177,9 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
-    public void EnterCombat()
+    private void EnterCombat()
     {
-        inCombat = true;
+        _inCombat = true;
 
         //homemade lerp to zoom out
         StartCoroutine(InputAxisLerp(_cinemachineOrbitalFollow.RadialAxis, combatCameraZoomOutDistance));
@@ -188,9 +190,9 @@ public class PlayerScript : MonoBehaviour
         _animator.SetBool(InCombatAnimation, true);
     }
 
-    public void ExitCombat()
+    private void ExitCombat()
     {
-        inCombat = false;
+        _inCombat = false;
 
         //homemade lerp to zoom in
         StartCoroutine(InputAxisLerp(_cinemachineOrbitalFollow.RadialAxis, 1));
@@ -205,24 +207,40 @@ public class PlayerScript : MonoBehaviour
         _animator.SetBool(InCombatAnimation, false);
     }
 
-    public void UnlockInputs()
+    public void Die()
     {
-        _isDodging = false;
-        _isAttacking = false;
+        //invulnerable while parrying
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Parry")) return;
+
+        _isDead = true;
+        _animator.SetBool(Death, true);
+
+        //to force the current animation to quit and play the death animation
+        _animator.Play("Die");
     }
 
-    public void ToggleCombat(InputAction.CallbackContext ctx)
+    public void Resurrect()
     {
-        if (inCombat)
+        if (!_isDead) return;
+
+        _isDead = false;
+        _animator.SetBool(Death, false);
+        resurrectionVFX.Play();
+
+        //to kill the enemies surrounding the player
+        var ray = new Ray(transform.position, transform.forward);
+        var enemies = Physics.SphereCastAll(ray, resurrectionHitRadius);
+        foreach (var enemy in enemies)
         {
-            ExitCombat();
-        }
-        else
-        {
-            EnterCombat();
+            var script = enemy.collider.gameObject.GetComponentInParent<EnemyScript>();
+            if (script)
+            {
+                script.Die();
+            }
         }
     }
 
+    //PLAYER INPUTS FUNCTIONS
     public void OnMove(InputAction.CallbackContext ctx)
     {
         _moveCanceled = ctx.canceled;
@@ -231,8 +249,7 @@ public class PlayerScript : MonoBehaviour
         _velocity.x = value.x;
         _velocity.z = value.y;
 
-        //animations
-        if (inCombat)
+        if (_inCombat)
         {
             _animator.SetFloat(Velocity, value.y);
             _animator.SetFloat(Strife, value.x);
@@ -247,7 +264,7 @@ public class PlayerScript : MonoBehaviour
     {
         if (!ctx.performed) return;
 
-        if (inCombat)
+        if (_inCombat)
         {
             if (_isDodging) return;
 
@@ -268,65 +285,55 @@ public class PlayerScript : MonoBehaviour
 
     public void OnParry(InputAction.CallbackContext ctx)
     {
-        if (!ctx.performed || !inCombat) return;
+        if (!ctx.performed || !_inCombat) return;
 
         _isAttacking = true;
 
-        //the shield hit boxes only exists when parrying and is set to false by an animation event
+        //the shield collider only exists when parrying and is set to false by an animation event
         shieldHitbox.enabled = true;
         _animator.SetTrigger(Parry);
     }
 
     public void OnAttack(InputAction.CallbackContext ctx)
     {
-        if (!ctx.performed || !inCombat) return;
+        if (!ctx.performed || !_inCombat) return;
 
         _isAttacking = true;
-        //the sword hit boxes only exists when parrying and is set to false by an animation event
+
+        //the sword collider only exists when parrying and is set to false by an animation event
         swordTrigger.enabled = true;
         _animator.SetTrigger(HeavyAttack);
     }
 
-    public void Die()
+    public void OnToggleCombat(InputAction.CallbackContext ctx)
     {
-        //invulnerable while parrying
-        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Parry")) return;
-        _isDead = true;
-        _animator.SetBool(Death, true);
-        _animator.Play("Die");
-    }
-
-    public void Resurrect()
-    {
-        if (!_isDead) return;
-        _isDead = false;
-        _animator.SetBool(Death, false);
-        
-        var ray = new Ray(transform.position,transform.forward);
-        var enemies = Physics.SphereCastAll(ray, resurrectionHitRadius);
-        foreach (var enemy in enemies)
+        if (_inCombat)
         {
-            var script = enemy.collider.gameObject.GetComponentInParent<EnemyScript>();
-            if (script)
-            {
-                script.Die();
-            }
+            ExitCombat();
         }
-        
-        resurrectionVFX.Play();
+        else
+        {
+            EnterCombat();
+        }
     }
 
+    public void OnToggleFocus(InputAction.CallbackContext ctx) => _focusEnemy = !_focusEnemy;
+
+    public void OnResurrect(InputAction.CallbackContext ctx)
+    {
+        if (ctx.performed) Resurrect();
+    }
+
+
+    //ANIMATION EVENTS FUNCTIONS
     public void AttackFinished() => _isAttacking = false;
     public void DisableSword() => swordTrigger.enabled = false;
     public void DisableShield() => shieldHitbox.enabled = false;
-    public void ToggleFocus(InputAction.CallbackContext ctx) => _focusEnemy = !_focusEnemy;
 
-    public void EnableControls()
+    public void UnlockInputs()
     {
-        this.GetComponent<PlayerInput>().enabled = true;
-        EnterCombat();
-        _audioSource.time = 90f;
-        _audioSource.Play();
+        _isDodging = false;
+        _isAttacking = false;
     }
 
     //HELPER FUNCTIONS
@@ -383,5 +390,16 @@ public class PlayerScript : MonoBehaviour
         yield return new WaitForSeconds(time);
         _grounded = false;
         _jumped = true;
+    }
+
+    /// <summary>
+    /// Used by the director (cinematic script) to give back control to the player
+    /// </summary>
+    public void EnableControls()
+    {
+        GetComponent<PlayerInput>().enabled = true;
+        EnterCombat();
+        _audioSource.time = 90f;
+        _audioSource.Play();
     }
 }

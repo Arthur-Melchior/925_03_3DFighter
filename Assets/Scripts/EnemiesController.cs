@@ -6,11 +6,13 @@ using UnityEngine.Events;
 
 public class EnemiesController : MonoBehaviour
 {
-    public GameObject enemyPrefab;
-    public PlayerScript player;
+    public UnityEvent gameWon;
+    
+    [SerializeField] private GameObject enemyPrefab;
+    [SerializeField] private PlayerScript player;
+    
     private float _enemyCount;
     private float _killCount;
-    public UnityEvent gameWon;
 
     public void SpawnEnemy()
     {
@@ -26,7 +28,6 @@ public class EnemiesController : MonoBehaviour
     {
         var ani = enemy.GetComponent<Animator>();
         yield return new WaitForSeconds(waitTime);
-        //enemy.transform.position = new Vector3(enemy.transform.position.x, 0, enemy.transform.position.z);
         ani.enabled = true;
     }
 
