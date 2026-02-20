@@ -4,6 +4,7 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 using UnityEngine.ProBuilder.Shapes;
 using Object = UnityEngine.Object;
 
@@ -14,10 +15,11 @@ using Object = UnityEngine.Object;
 [ExecuteAlways]
 public class WormScript : MonoBehaviour
 {
-    [Min(0)] [SerializeField] private int numberOfElements = 5;
+    [Min(2)] [SerializeField] private int numberOfElements = 5;
     [SerializeField] private float gap = 2f;
     [SerializeField] private PrimitiveType shape;
     [SerializeField] private Transform bonesTransform;
+    [SerializeField] private Transform rigTransform;
 
     private bool _isGenerating;
 
@@ -44,9 +46,14 @@ public class WormScript : MonoBehaviour
             DestroyImmediate(bonesTransform.GetChild(i).gameObject);
         }
 
+        for (var i = rigTransform.childCount - 1; i >= 0; i--)
+        {
+            DestroyImmediate(rigTransform.GetChild(i).gameObject);
+        }
+
         var previousPart = bonesTransform;
 
-        for (var i = 0; i < numberOfElements; i++)
+        for (var i = 1; i < numberOfElements; i++)
         {
             var newPart = GameObject.CreatePrimitive(shape);
 
@@ -59,6 +66,32 @@ public class WormScript : MonoBehaviour
             previousPart = newPart.transform;
         }
 
+        var dampTransform = new GameObject
+        {
+            name = "Head Constraint"
+        };
+        dampTransform.transform.SetParent(rigTransform);
+        
+        var dampTransformConstraint = dampTransform.AddComponent<DampedTransform>();
+        dampTransformConstraint.data.sourceObject = bonesTransform.GetChild(0);
+        dampTransformConstraint.data.constrainedObject = bonesTransform.GetChild(1);
+
+        var chainIK = new GameObject
+        {
+            name = "Chain Constraint",
+            transform =
+            {
+                position = transform.position + new Vector3(0, 0, numberOfElements * gap)
+            }
+        };
+        chainIK.transform.SetParent(rigTransform);
+
+        var chainIKConstraint = chainIK.AddComponent<ChainIKConstraint>();
+        chainIKConstraint.data.target = chainIK.transform;
+        chainIKConstraint.data.root = bonesTransform.GetChild(0);
+        chainIKConstraint.data.tip = previousPart;
+        chainIKConstraint.data.chainRotationWeight = 0.5f;
+        
         _isGenerating = false;
     }
 }
