@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Animator))]
@@ -35,6 +36,7 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] private ParticleSystem resurrectionVFX;
     [SerializeField] private SwordScript swordScript;
     [SerializeField] private ShieldScript shieldScript;
+    [SerializeField] private MultiParentConstraint mpc;
 
     [Header("Camera")] [SerializeField] private CinemachineCamera cinemachineCamera;
     [SerializeField] private float combatCameraZoomOutDistance = 3f;
@@ -189,9 +191,6 @@ public class PlayerScript : MonoBehaviour
         //centers the camera
         _cinemachineRotationComposer.Composition.ScreenPosition = new Vector2(0, 0);
         
-        //rotates and moves the sword
-        swordScript.EnterCombat();
-        
         _animator.SetBool(InCombatAnimation, true);
     }
 
@@ -208,8 +207,6 @@ public class PlayerScript : MonoBehaviour
         //Focuses the camera on the player
         _lookAtTarget.position = Vector3.Lerp(_lookAtTarget.transform.position,
             new Vector3(transform.position.x, _originalLookAtTargetPosition.y, transform.position.z), 0.1f);
-        
-        swordScript.ExitCombat();
 
         _animator.SetBool(InCombatAnimation, false);
     }
@@ -343,6 +340,14 @@ public class PlayerScript : MonoBehaviour
         {
             EnterCombat();
         }
+    }
+
+    public void OnTake(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.performed) return;
+        _animator.SetTrigger("test");
+
+        mpc.weight = 0f;
     }
 
     //ANIMATION EVENTS FUNCTIONS

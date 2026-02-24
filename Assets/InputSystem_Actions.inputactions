@@ -122,6 +122,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "TakeObject",
+                    "type": "Button",
+                    "id": "f262ac4a-caaa-4bb7-a157-5fc47437e0de",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -584,6 +593,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Resurrect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a1f61d23-b236-48a1-91d1-1010c8d54bcf",
+                    "path": "<Keyboard>/t",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "TakeObject",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
