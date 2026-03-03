@@ -31,8 +31,9 @@ public class ParkourScript : MonoBehaviour
         {
             if (raycastHit.transform.gameObject.CompareTag("Ledge"))
             {
+                target = raycastHit.transform;
                 transform.LookAt(raycastHit.transform.parent.position);
-                StartCoroutine(MoveTo(target.position, 1));
+                StartCoroutine(MoveTo(raycastHit.transform.position, 1));
                 break;
             }
         }
@@ -42,7 +43,7 @@ public class ParkourScript : MonoBehaviour
     {
         if (!ctx.performed) return;
         var value = ctx.ReadValue<Vector2>();
-        _characterController.Move(transform.right * value.x);
+        _characterController.Move(target.right * value.x);
     }
 
     IEnumerator MoveTo(Vector3 target, float duration)
