@@ -5,6 +5,11 @@ TagManager:
   serializedVersion: 3
   tags:
   - Enemy
+  - Ledge
+  - Right Hand Ledge
+  - Left Hand Ledge
+  - Left Leg Ledge
+  - Right Leg Ledge
   layers:
   - Default
   - TransparentFX
