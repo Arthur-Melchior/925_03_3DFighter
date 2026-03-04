@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
+using UnityEngine.Splines;
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(CharacterController))]
@@ -11,6 +12,7 @@ public class ParkourScript : MonoBehaviour
 {
     public AnimationCurve Curve;
     [SerializeField] private Transform target;
+    [SerializeField] private SplineContainer spline;
     public UnityEvent jumpFinished;
     private Animator _animator;
     private CharacterController _characterController;
@@ -43,7 +45,8 @@ public class ParkourScript : MonoBehaviour
     {
         if (!ctx.performed) return;
         var value = ctx.ReadValue<Vector2>();
-        _characterController.Move(target.right * value.x);
+        var test = spline.EvaluatePosition(value.x);
+        _characterController.Move(new Vector3(test.x, test.y - 1.8f, test.z) - transform.position);
     }
 
     IEnumerator MoveTo(Vector3 target, float duration)
