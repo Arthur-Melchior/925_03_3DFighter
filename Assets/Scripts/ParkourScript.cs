@@ -10,17 +10,23 @@ using UnityEngine.Splines;
 [RequireComponent(typeof(CharacterController))]
 public class ParkourScript : MonoBehaviour
 {
-    public AnimationCurve Curve;
-    [SerializeField] private Transform target;
-    [SerializeField] private SplineContainer spline;
     public UnityEvent jumpFinished;
+    [SerializeField] private AnimationCurve jumpCurve;
+    [SerializeField] private SplineContainer spline;
+    [SerializeField] private float speed;
+    private float _pointOnSpline;
+    private Vector3 _pointOnSplinePosition;
+    private float _directionX;
+    private Vector3 _direction;
     private Animator _animator;
     private CharacterController _characterController;
+    private float _splineLength;
 
     private void Start()
     {
         _animator = GetComponent<Animator>();
         _characterController = GetComponent<CharacterController>();
+        _splineLength = spline.CalculateLength();
     }
 
     public void OnJump(InputAction.CallbackContext ctx)
@@ -33,7 +39,6 @@ public class ParkourScript : MonoBehaviour
         {
             if (raycastHit.transform.gameObject.CompareTag("Ledge"))
             {
-                target = raycastHit.transform;
                 transform.LookAt(raycastHit.transform.parent.position);
                 StartCoroutine(MoveTo(raycastHit.transform.position, 1));
                 break;
@@ -41,24 +46,38 @@ public class ParkourScript : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (_directionX != 0)
+        {
+            _pointOnSpline += _directionX * speed * Time.deltaTime / _splineLength;
+            _pointOnSpline = Mathf.Clamp01(_pointOnSpline);
+            _pointOnSplinePosition = spline.EvaluatePosition(_pointOnSpline);
+            _direction = _pointOnSplinePosition - transform.position;
+
+            if (_direction.magnitude > 0.01f)
+            {
+                _characterController.Move(_direction);
+            }
+        }
+    }
+
     public void OnMove(InputAction.CallbackContext ctx)
     {
-        if (!ctx.performed) return;
         var value = ctx.ReadValue<Vector2>();
-        var test = spline.EvaluatePosition(value.x);
-        _characterController.Move(new Vector3(test.x, test.y - 1.8f, test.z) - transform.position);
+        _directionX = value.x;
     }
 
     IEnumerator MoveTo(Vector3 target, float duration)
     {
-        Vector3 start = transform.position;
+        var start = transform.position;
         float time = 0;
 
         while (time < duration)
         {
             time += Time.deltaTime;
             var t = time / duration;
-            transform.position = Vector3.Lerp(start, target, Curve.Evaluate(t));
+            transform.position = Vector3.Lerp(start, target, jumpCurve.Evaluate(t));
             yield return null;
         }
 
