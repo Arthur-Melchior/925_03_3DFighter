@@ -52,6 +52,6 @@ public class RigController : MonoBehaviour
 
         _rightArmboneIKTarget.transform.position = rightArmBoneIKConstraint.data.target.position;
         rightArmBoneIKConstraint.data.target = _rightArmboneIKTarget;
-        GetComponent<RigBuilder>().Build();
+        rigBuilder.Build();
     }
 }
